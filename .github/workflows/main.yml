@@ -6,7 +6,7 @@ on:
       rapidgator_urls:
         description: "Masukkan URL Rapidgator (pisahkan dengan koma)"
         required: true
-        default: "https://rapidgator.net/file/abc123,https://rapidgator.net/file/xyz456"
+        default: ""
 
 jobs:
   build:
