@@ -1,16 +1,33 @@
-name: Ubuntu - Rapidgator1
+name: Ubuntu - Rapidgator Direct Download
 
 on:
   workflow_dispatch:
+    inputs:
+      rapidgator_urls:
+        description: "Masukkan URL Rapidgator (pisahkan dengan koma jika banyak)"
+        required: true
+        default: "https://rapidgator.net/file/abc123,https://rapidgator.net/file/xyz456"
 
 jobs:
   build:
-    name: Start Building...
     runs-on: ubuntu-latest
-
     steps:
-      - name: Downloading & Installing Essentials
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
         run: |
-          wget -O rpgl.sh "https://raw.githubusercontent.com/diva22001/rapidgator2/refs/heads/main/rpgl.sh?token=GHSAT0AAAAAADGBDO4YWUMLSN4SP4QJ3RWI2FCBPPA"
-          chmod +x rpgl.sh
-          ./rpgl.sh
+          sudo apt-get update
+          sudo apt-get install -y aria2 python3-pip
+          pip install requests
+
+      - name: Download and Run Script
+        run: |
+          # Download rapidgator.py
+          curl -o rapidgator.py https://raw.githubusercontent.com/Bogyi2024/log/main/dep_download/rapidgator.py
+
+          # Buat file input.txt berisi URL Rapidgator
+          echo "${{ github.event.inputs.rapidgator_urls }}" | tr ',' '\n' > input.txt
+
+          # Jalankan script dengan input file
+          python3 rapidgator.py --input-file input.txt
