@@ -31,7 +31,7 @@ jobs:
       - name: Download Files from Rapidgator
         run: |
           # Download script rapidgator.py
-          wget -O rapidgator.py https://raw.githubusercontent.com/diva22001/rapidgator2/refs/heads/main/rapidgator.py?token=GHSAT0AAAAAADGBDO4Y6MA55DZESUQPNWPA2FCCTUQ
+          wget -O rapidgator.py https://raw.githubusercontent.com/diva22001/rapidgator2/refs/heads/main/rapidgator.py
 
           # Buat file input dari URL
           echo "${{ github.event.inputs.rapidgator_urls }}" | tr ',' '\n' > urls.txt
