@@ -4,33 +4,40 @@ on:
   workflow_dispatch:
     inputs:
       rapidgator_urls:
-        description: "URL Rapidgator (pisahkan dengan koma)"
+        description: "Masukkan URL Rapidgator (pisahkan dengan koma)"
         required: true
+        default: "https://rapidgator.net/file/abc123,https://rapidgator.net/file/xyz456"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Rclone
-        run: |
-          mkdir -p ~/.config/rclone
-          cat <<EOF > ~/.config/rclone/rclone.conf
-          [diva22001]
-          type = drive
-          scope = drive
-          token = {"access_token":"ya29.A0AS3H6Nz09a2yoJwMd56IL3ihnxiFbLzzLf-WyDdoazQzzTkQvNn1MnU9sWsByHCgcthFyiCu4i7MGao2HjBV7M0MDsBZLlTmdYNm4pLvUAEp9xTLGQhIEolHDy5r-dt8a-9Lk_ZNtpvRA-LEcWrFg-znfV2yWeDXu6voUgcTHDXdKSw_5GmJP7q9VUYDrARUs4HF0PEaCgYKAdASARQSFQHGX2Mif9StCgEwmKlvMALNb8kcbQ0206","token_type":"Bearer","refresh_token":"1//0g_0G_5Oak3NpCgYIARAAGBASNwF-L9IrmNz3af5fKSzKbuzc3tHZKl4stRLyQ3gdvdeQrRpefJtrjiOiHjisEDJ3-st_33escXw","expiry":"2025-08-18T02:28:08.9675444+08:00","expires_in":3599}
-          team_drive =
-          EOF
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 rclone
+          sudo apt-get install -y aria2 rclone python3-pip
+          pip install requests
 
-      - name: Download Files
+      - name: Configure Rclone
+        env:
+          RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}  # Simpan konfig rclone.conf di Secrets
         run: |
-          echo "${{ github.event.inputs.rapidgator_urls }}" | tr ',' '\n' > input.txt
-          python3 rapidgator.py --input-file input.txt
+          mkdir -p ~/.config/rclone
+          echo "$RCLONE_CONFIG" > ~/.config/rclone/rclone.conf
+
+      - name: Download Files from Rapidgator
+        run: |
+          # Download script rapidgator.py
+          wget -O rapidgator.py https://raw.githubusercontent.com/diva22001/rapidgator2/refs/heads/main/rapidgator.py?token=GHSAT0AAAAAADGBDO4ZGOBYQDEHOZDWD4SI2FCCL5A
+
+          # Buat file input dari URL
+          echo "${{ github.event.inputs.rapidgator_urls }}" | tr ',' '\n' > urls.txt
+
+          # Jalankan downloader
+          python3 rapidgator.py --input-file urls.txt
 
       - name: Upload to Google Drive
         run: |
