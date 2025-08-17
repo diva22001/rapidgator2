@@ -1,33 +1,37 @@
-name: Ubuntu - Rapidgator Direct Download
+name: Rapidgator to Google Drive
 
 on:
   workflow_dispatch:
     inputs:
       rapidgator_urls:
-        description: "Masukkan URL Rapidgator (pisahkan dengan koma jika banyak)"
+        description: "URL Rapidgator (pisahkan dengan koma)"
         required: true
-        default: "https://rapidgator.net/file/abc123,https://rapidgator.net/file/xyz456"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Setup Rclone
+        run: |
+          mkdir -p ~/.config/rclone
+          cat <<EOF > ~/.config/rclone/rclone.conf
+          [diva22001]
+          type = drive
+          scope = drive
+          token = {"access_token":"ya29.A0AS3H6Nz09a2yoJwMd56IL3ihnxiFbLzzLf-WyDdoazQzzTkQvNn1MnU9sWsByHCgcthFyiCu4i7MGao2HjBV7M0MDsBZLlTmdYNm4pLvUAEp9xTLGQhIEolHDy5r-dt8a-9Lk_ZNtpvRA-LEcWrFg-znfV2yWeDXu6voUgcTHDXdKSw_5GmJP7q9VUYDrARUs4HF0PEaCgYKAdASARQSFQHGX2Mif9StCgEwmKlvMALNb8kcbQ0206","token_type":"Bearer","refresh_token":"1//0g_0G_5Oak3NpCgYIARAAGBASNwF-L9IrmNz3af5fKSzKbuzc3tHZKl4stRLyQ3gdvdeQrRpefJtrjiOiHjisEDJ3-st_33escXw","expiry":"2025-08-18T02:28:08.9675444+08:00","expires_in":3599}
+          team_drive =
+          EOF
 
-      - name: Setup Environment
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 python3-pip
-          pip install requests
+          sudo apt-get install -y aria2 rclone
 
-      - name: Download and Run Script
+      - name: Download Files
         run: |
-          # Download rapidgator.py
-          curl -o rapidgator.py https://raw.githubusercontent.com/Bogyi2024/log/main/dep_download/rapidgator.py
-
-          # Buat file input.txt berisi URL Rapidgator
           echo "${{ github.event.inputs.rapidgator_urls }}" | tr ',' '\n' > input.txt
-
-          # Jalankan script dengan input file
           python3 rapidgator.py --input-file input.txt
+
+      - name: Upload to Google Drive
+        run: |
+          rclone copy ./download diva22001:/ -P --stats-one-line
